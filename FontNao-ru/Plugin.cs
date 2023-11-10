@@ -1,14 +1,19 @@
-﻿using HarmonyLib;
+﻿using BS_Utils.Utilities;
+using FontNao_ru.Models;
+using HarmonyLib;
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
+using Font = UnityEngine.Font;
 using IPALogger = IPA.Logging.Logger;
 
 namespace FontNao_ru
@@ -24,6 +29,27 @@ namespace FontNao_ru
         internal static Plugin Instance { get; private set; }
         internal static IPALogger Log { get; private set; }
         private Harmony harmony;
+
+        public static void Error(Exception log)
+        {
+            try {
+                Log.Error(log);
+            }
+            catch (Exception e) {
+                Log.Error(e);
+            }
+        }
+
+        public static void Info(string message)
+        {
+            try {
+                Log.Info(message);
+            }
+            catch (Exception e) {
+                Log.Error($"{message}");
+            }
+        }
+
         [Init]
         /// <summary>
         /// Called when the plugin is first loaded by IPA (either when the game starts or when the plugin is enabled if it starts disabled).
@@ -35,6 +61,44 @@ namespace FontNao_ru
             Instance = this;
             Plugin.Log = logger;
             Plugin.Log?.Debug("Logger initialized.");
+            BSEvents.lateMenuSceneLoadedFresh += this.BSEvents_lateMenuSceneLoadedFresh;
+            ApplyHarmonyPatches();
+        }
+
+        private void BSEvents_lateMenuSceneLoadedFresh(ScenesTransitionSetupDataSO obj)
+        {
+            try {
+                //foreach (var fontPath in Font.GetPathsToOSFonts()) {
+                //    var font = new Font(fontPath);
+                //    if (font.name.ToLower() != "meiryob") {
+                //        continue;
+                //    }
+                //    var asset = TMP_FontAsset.CreateFontAsset(font, 90, 5, UnityEngine.TextCore.LowLevel.GlyphRenderMode.SDFAA, 8192, 4096);
+                //    foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
+                //        fontAsset.fallbackFontAssetTable = new List<TMP_FontAsset>();
+                //        fontAsset.fallbackFontAssetTable.Add(asset);
+                //    }
+                //}
+                var tmp = FontLoader.FallBackFonts.ToList();
+                foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
+                    var newFallBack = new List<TMP_FontAsset>();
+                    var oldFallback = fontAsset.fallbackFontAssetTable?.ToList();
+                    newFallBack.AddRange(tmp);
+                    if (oldFallback != null) {
+                        newFallBack.AddRange(oldFallback);
+                    }
+                    if (fontAsset.fallbackFontAssetTable == null) {
+                        fontAsset.fallbackFontAssetTable = newFallBack;
+                    }
+                    else {
+                        fontAsset.fallbackFontAssetTable.Clear();
+                        fontAsset.fallbackFontAssetTable.AddRange(newFallBack);
+                    }
+                }
+            }
+            catch (Exception e) {
+                Log?.Error(e);
+            }
         }
 
         #region BSIPA Config
@@ -59,7 +123,7 @@ namespace FontNao_ru
         public void OnEnable()
         {
             
-            ApplyHarmonyPatches();
+            
         }
 
         /// <summary>

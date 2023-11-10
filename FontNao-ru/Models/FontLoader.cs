@@ -1,16 +1,11 @@
 ﻿using BeatSaberMarkupLanguage;
-using FontNao_ru.Configuration;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.TextCore.LowLevel;
-using Zenject;
-
 
 namespace FontNao_ru.Models
 {
@@ -32,7 +27,7 @@ namespace FontNao_ru.Models
 
             return false;
         }
-        private static readonly string FontAssetPath = Path.Combine(Environment.CurrentDirectory, "UserData", "FontAssets");
+        private static readonly string FontAssetPath = Path.Combine(Environment.CurrentDirectory, "UserData", "FontNao_ru", "FontAssets");
         private static readonly string MainFontPath = Path.Combine(FontAssetPath, "Main");
         private static readonly string FallBackFontPath = Path.Combine(FontAssetPath, "FallBack");
 
@@ -70,7 +65,7 @@ namespace FontNao_ru.Models
             private set => _fallbackFonts = value;
         }
 
-        
+
         public static async Task CreateChatFont()
         {
             IsInitialized = false;
@@ -92,7 +87,7 @@ namespace FontNao_ru.Models
                 _ = Directory.CreateDirectory(FallBackFontPath);
             }
 
-            
+
             TMP_FontAsset asset = null;
             AssetBundle bundle = null;
             foreach (var filename in Directory.EnumerateFiles(MainFontPath, "*.assets", SearchOption.TopDirectoryOnly)) {

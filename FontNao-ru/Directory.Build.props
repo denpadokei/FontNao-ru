@@ -5,4 +5,8 @@
 		<ImportBSMTTargets>True</ImportBSMTTargets>
 		<BSMTProjectType>BSIPA</BSMTProjectType>
 	</PropertyGroup>
+  <ItemGroup>
+    <OutputCopy Include="$(TargetPath)" OutputPath="Plugins\$(TargetName).dll" />
+    <OutputCopy Include="FontAssets\mplus-1m-medium sdf.assets" OutputPath="UserData\FontNao_ru\FontAssets\FallBack\mplus-1c-medium sdf.assets" />
+  </ItemGroup>
 </Project>

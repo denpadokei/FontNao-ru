@@ -7,10 +7,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace FontNao_ru.Patch
 {
-    [HarmonyPatch(nameof(BeatSaberMarkupLanguage.Plugin.OnStart))]
+    [HarmonyPatch(typeof(BeatSaberMarkupLanguage.Plugin), nameof(BeatSaberMarkupLanguage.Plugin.OnStart))]
     internal class LoadAndSetUpFontFallbacksAsyncPatch
     {
         [HarmonyPostfix]
@@ -19,11 +22,6 @@ namespace FontNao_ru.Patch
             await UnityMainThreadTaskScheduler.Factory.StartNew(async () =>
             {
                 await FontLoader.CreateChatFont();
-                var mainfont = BeatSaberUI.MainTextFont;
-                var tmp = FontLoader.FallBackFonts.ToList();
-                tmp.AddRange(mainfont.fallbackFontAssetTable.ToList());
-                mainfont.fallbackFontAssetTable.Clear();
-                mainfont.fallbackFontAssetTable.AddRange(tmp);
             });
         }
     }
