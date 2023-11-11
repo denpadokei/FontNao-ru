@@ -2,18 +2,12 @@
 using FontNao_ru.Models;
 using HarmonyLib;
 using IPA;
-using IPA.Config;
-using IPA.Config.Stores;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using Font = UnityEngine.Font;
 using IPALogger = IPA.Logging.Logger;
 
 namespace FontNao_ru
@@ -45,7 +39,7 @@ namespace FontNao_ru
             try {
                 Log.Info(message);
             }
-            catch (Exception e) {
+            catch (Exception) {
                 Log.Error($"{message}");
             }
         }
@@ -62,23 +56,13 @@ namespace FontNao_ru
             Plugin.Log = logger;
             Plugin.Log?.Debug("Logger initialized.");
             BSEvents.lateMenuSceneLoadedFresh += this.BSEvents_lateMenuSceneLoadedFresh;
-            ApplyHarmonyPatches();
+            this.ApplyHarmonyPatches();
         }
 
         private void BSEvents_lateMenuSceneLoadedFresh(ScenesTransitionSetupDataSO obj)
         {
             try {
-                //foreach (var fontPath in Font.GetPathsToOSFonts()) {
-                //    var font = new Font(fontPath);
-                //    if (font.name.ToLower() != "meiryob") {
-                //        continue;
-                //    }
-                //    var asset = TMP_FontAsset.CreateFontAsset(font, 90, 5, UnityEngine.TextCore.LowLevel.GlyphRenderMode.SDFAA, 8192, 4096);
-                //    foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
-                //        fontAsset.fallbackFontAssetTable = new List<TMP_FontAsset>();
-                //        fontAsset.fallbackFontAssetTable.Add(asset);
-                //    }
-                //}
+
                 var tmp = FontLoader.FallBackFonts.ToList();
                 foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
                     var newFallBack = new List<TMP_FontAsset>();
@@ -113,7 +97,6 @@ namespace FontNao_ru
         */
         #endregion
 
-
         #region Disableable
 
         /// <summary>
@@ -122,8 +105,7 @@ namespace FontNao_ru
         [OnEnable]
         public void OnEnable()
         {
-            
-            
+
         }
 
         /// <summary>
@@ -134,8 +116,8 @@ namespace FontNao_ru
         [OnDisable]
         public void OnDisable()
         {
-            
-            RemoveHarmonyPatches();
+
+            this.RemoveHarmonyPatches();
         }
 
         /*
@@ -177,7 +159,7 @@ namespace FontNao_ru
         {
             try {
                 // Removes all patches with this HarmonyId
-                harmony.UnpatchSelf();
+                this.harmony.UnpatchSelf();
             }
             catch (Exception ex) {
                 Plugin.Log?.Error("Error removing Harmony patches: " + ex.Message);

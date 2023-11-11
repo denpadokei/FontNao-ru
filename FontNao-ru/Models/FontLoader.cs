@@ -65,7 +65,6 @@ namespace FontNao_ru.Models
             private set => _fallbackFonts = value;
         }
 
-
         public static async Task CreateChatFont()
         {
             IsInitialized = false;
@@ -86,29 +85,7 @@ namespace FontNao_ru.Models
             if (!Directory.Exists(FallBackFontPath)) {
                 _ = Directory.CreateDirectory(FallBackFontPath);
             }
-
-
-            TMP_FontAsset asset = null;
             AssetBundle bundle = null;
-            foreach (var filename in Directory.EnumerateFiles(MainFontPath, "*.assets", SearchOption.TopDirectoryOnly)) {
-                using (var fs = File.OpenRead(filename)) {
-                    bundle = AssetBundle.LoadFromStream(fs);
-                }
-                if (bundle != null) {
-                    break;
-                }
-            }
-            if (bundle != null) {
-                foreach (var bundleItem in bundle.GetAllAssetNames()) {
-                    asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
-                    if (asset != null) {
-                        MainFont = asset;
-                        bundle.Unload(false);
-                        break;
-                    }
-                }
-            }
-
             _fallbackFonts.Clear();
             foreach (var fallbackFontPath in Directory.EnumerateFiles(FallBackFontPath, "*.assets")) {
                 using (var fs = File.OpenRead(fallbackFontPath)) {
@@ -118,23 +95,13 @@ namespace FontNao_ru.Models
                     continue;
                 }
                 foreach (var bundleItem in bundle.GetAllAssetNames()) {
-                    asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
+                    var asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
                     if (asset != null) {
+                        Plugin.Info($"{asset.name} is Load");
                         _fallbackFonts.Add(asset);
                     }
                 }
                 bundle.Unload(false);
-            }
-            foreach (var osFontPath in Font.GetPathsToOSFonts()) {
-                if (Path.GetFileNameWithoutExtension(osFontPath).ToLower() != "meiryo") {
-                    continue;
-                }
-                var meiryo = new Font(osFontPath)
-                {
-                    name = Path.GetFileNameWithoutExtension(osFontPath)
-                };
-                asset = TMP_FontAsset.CreateFontAsset(meiryo);
-                _fallbackFonts.Add(asset);
             }
             IsInitialized = true;
         }

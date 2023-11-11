@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using IPA.Config.Data;
 using System;
 using TMPro;
 using static TMPro.TMP_Text;
@@ -21,8 +20,8 @@ namespace FontNao_ru.Patch
             }
             try {
                 __instance.m_styleStack.SetDefault(0);
-                int writeIndex = 0;
-                for (int i = 0; i < sourceText.Length; i++) {
+                var writeIndex = 0;
+                for (var i = 0; i < sourceText.Length; i++) {
                     if (__instance.m_inputSource == TextInputSources.Text && sourceText[i] == '\\' && sourceText.Length > i + 1) {
                         switch (sourceText[i + 1]) {
                             case 'U':
@@ -151,7 +150,7 @@ namespace FontNao_ru.Patch
                             }
                         }
                         else if (__instance.IsTagName(ref sourceText, "</STYLE>", i)) {
-                            __instance.ReplaceClosingStyleTag(ref sourceText, i, ref charBuffer, ref writeIndex);
+                            _ = __instance.ReplaceClosingStyleTag(ref sourceText, i, ref charBuffer, ref writeIndex);
                             i += 7;
                             continue;
                         }
