@@ -2,12 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/bsmg/BSIPA-MetadataFileSchema/master/Schema.json",
   "id": "FontNao_ru",
   "name": "FontNao-ru",
-  "author": "",
-  "version": "0.0.3",
+  "author": "denpadokei",
+  "version": "0.0.4",
   "description": "",
   "gameVersion": "1.29.0",
   "dependsOn": {
     "BSIPA": "^4.2.2",
-    "BeatSaberMarkupLanguage": "^1.6.10"
+    "BeatSaberMarkupLanguage": "^1.6.10",
+    "BS Utils": "^1.12.2"
   }
 }
