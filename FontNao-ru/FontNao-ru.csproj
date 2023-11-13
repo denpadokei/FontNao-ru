@@ -141,9 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
-    <None Include="FontAssets\notosansjp-regular sdf.assets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="FontAssets\notosansjp-medium sdf.assets" />
     <None Include="FontNao_ru.csproj.user" Condition="Exists('FontNao_ru.csproj.user')" />
   </ItemGroup>
   <ItemGroup>

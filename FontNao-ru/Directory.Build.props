@@ -7,6 +7,6 @@
 	</PropertyGroup>
   <ItemGroup>
     <OutputCopy Include="$(TargetPath)" OutputPath="Plugins\$(TargetName).dll" />
-    <OutputCopy Include="FontAssets\notosansjp-regular sdf.assets" OutputPath="UserData\FontNao_ru\FontAssets\FallBack\notosansjp-regular sdf.assets" />
+    <OutputCopy Include="FontAssets\notosansjp-medium sdf.assets" OutputPath="UserData\FontNao_ru\FontAssets\FallBack\notosansjp-medium sdf.assets" />
   </ItemGroup>
 </Project>
