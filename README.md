@@ -1,6 +1,12 @@
 # FontNao-ru
 フォントなお～る
 
+## フォントの変更
+UserData\FontNao_ru\FontAssets\FallBack  
+
+上記のパスにフォントをぶち込んでください  
+詳しくは[こちら](https://github.com/denpadokei/ESCFontProject)   
+
 ## before
 ![スクリーンショット (27)](https://github.com/denpadokei/FontNao-ru/assets/55026301/7c8afc82-244c-460c-8760-b33724595db7)
 
