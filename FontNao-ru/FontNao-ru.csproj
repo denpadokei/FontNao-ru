@@ -132,6 +132,7 @@
     <Compile Include="Patch\LebelBarPatch.cs" />
     <Compile Include="Patch\LoadAndSetUpFontFallbacksAsyncPatch.cs" />
     <Compile Include="Patch\StringToCharArrayPatch.cs" />
+    <Compile Include="Patch\TextMeshProUGUIPatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
