@@ -1,46 +1,40 @@
-﻿using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Components;
-using FontNao_ru.Models;
-using HarmonyLib;
+﻿using HarmonyLib;
 using HMUI;
-using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using TMPro;
-using UnityEngine;
 
 namespace FontNao_ru.Patch
 {
     /// <summary>
-    /// メインの曲リストのみ適応
+    /// BSMLのリストでバグるので共通化
     /// </summary>
-    [HarmonyPatch(typeof(LevelListTableCell))]
-    [HarmonyPatch(nameof(LevelListTableCell.SetDataFromLevelAsync), MethodType.Normal)]
-    internal class LevelListTableCellSetDataFromLevelAsyncPatch
-    {
-
-        [HarmonyPrefix]
-        public static void HarmonyPrefix(ref TextMeshProUGUI ____songNameText)
-        {
-            if (____songNameText) {
-                ____songNameText.enableAutoSizing = true;
-                ____songNameText.fontSizeMax = 4f;
-                ____songNameText.fontSizeMin = 2.5f;
-            }
-        }
-    }
-
-    /// <summary>
-    /// BSMLのリストでバグる
-    /// </summary>
-    [HarmonyPatch(typeof(LevelListTableCell))]
-    [HarmonyPatch(nameof(LevelListTableCell.enabled), MethodType.Setter)]
+    [HarmonyPatch(typeof(TableView))]
     internal class LevelListTableCellEnablePatch
     {
-        [HarmonyPrefix]
-        public static void HarmonyPrefix(ref TextMeshProUGUI ____songNameText)
+        [HarmonyTargetMethod]
+        public static MethodBase Method()
         {
-            if (____songNameText) {
-                ____songNameText.enableWordWrapping = false;
-                ____songNameText.overflowMode = TextOverflowModes.Ellipsis;
+            return typeof(TableView).GetMethod(nameof(TableView.RefreshCells), BindingFlags.Public | BindingFlags.Instance);
+        }
+
+        [HarmonyPostfix]
+        public static void HarmonyPrefix(List<TableCell> ____visibleCells)
+        {
+            try {
+                foreach (var cell in ____visibleCells) {
+                    if (cell is LevelListTableCell levelCell) {
+                        levelCell._songNameText.enableAutoSizing = true;
+                        levelCell._songNameText.fontSizeMax = 4f;
+                        levelCell._songNameText.fontSizeMin = 2.5f;
+                        levelCell._songNameText.enableWordWrapping = false;
+                        levelCell._songNameText.overflowMode = TextOverflowModes.Ellipsis;
+                    }
+                }
+            }
+            catch (Exception e) {
+                Plugin.Error(e);
             }
         }
     }
