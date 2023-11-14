@@ -1,11 +1,6 @@
 ﻿using FontNao_ru.Models;
 using HarmonyLib;
-using HMUI;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TMPro;
 
 namespace FontNao_ru.Patch
