@@ -18,8 +18,8 @@ namespace FontNao_ru.Patch
         public static void HarmonyPrefix(TMP_Text __instance)
         {
             try {
-                if ((__instance.font.name == "Teko-Medium SDF" || __instance.font.name == "Teko-Medium SDF Numbers Monospaced Curved") && FontLoader.MainFont && __instance.font != FontLoader.MainFont) {
-                    __instance.font = FontLoader.MainFont;
+                if (__instance is TextMeshProUGUI text && (text.font.name == "Teko-Medium SDF" || text.font.name == "Teko-Medium SDF Numbers Monospaced Curved") && FontLoader.MainFont && text.font != FontLoader.MainFont) {
+                    text.font = FontLoader.MainFont;
                 }
             }
             catch (Exception) {
