@@ -65,6 +65,9 @@ namespace FontNao_ru
 
                 var tmp = FontLoader.FallBackFonts.ToList();
                 foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
+                    if (fontAsset == FontLoader.MainFont) {
+                        continue;
+                    }
                     var newFallBack = new List<TMP_FontAsset>();
                     var oldFallback = fontAsset.fallbackFontAssetTable?.ToList();
                     newFallBack.AddRange(tmp);
