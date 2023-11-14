@@ -12,16 +12,16 @@ namespace FontNao_ru.Models
     internal static class FontLoader
     {
         private static Material s_noGlow;
-        public static Material UINoGlowMaterial => s_noGlow ?? (s_noGlow = Resources.FindObjectsOfTypeAll<Material>().Where(m => m.name == "UINoGlow").FirstOrDefault());
+        public static Material UINoGlowMaterial => s_noGlow ?? (s_noGlow = BeatSaberUI.MainUIFontMaterial);
 
-        private static Shader s_tmpNoGlowFontShader;
-        public static Shader TMPNoGlowFontShader => s_tmpNoGlowFontShader ?? (s_tmpNoGlowFontShader = !BeatSaberUI.MainTextFont ? null : BeatSaberUI.MainTextFont.material.shader);
+        private static Shader s_mainUIFontMaterialShader;
+        public static Shader MainUIFontMaterialShader => s_mainUIFontMaterialShader ?? (s_mainUIFontMaterialShader = !BeatSaberUI.MainTextFont ? null : BeatSaberUI.MainTextFont.material.shader);
 
         // DaNike to the rescue 
         public static bool TryGetTMPFontByFamily(string family, out TMP_FontAsset font)
         {
             if (FontManager.TryGetTMPFontByFamily(family, out font)) {
-                font.material.shader = TMPNoGlowFontShader;
+                font.material.shader = MainUIFontMaterialShader;
                 return true;
             }
 
@@ -42,8 +42,11 @@ namespace FontNao_ru.Models
                 if (!_mainFont) {
                     return null;
                 }
-                if (_mainFont.material.shader != TMPNoGlowFontShader) {
-                    _mainFont.material.shader = TMPNoGlowFontShader;
+                if (_mainFont.material.shader != MainUIFontMaterialShader) {
+                    _mainFont.material.shader = MainUIFontMaterialShader;
+                }
+                if (!_mainFont.material.shaderKeywords.Any()) {
+                    _mainFont.material.shaderKeywords = UINoGlowMaterial.shaderKeywords;
                 }
                 return _mainFont;
             }
@@ -56,8 +59,11 @@ namespace FontNao_ru.Models
             get
             {
                 foreach (var font in _fallbackFonts) {
-                    if (font.material.shader != TMPNoGlowFontShader) {
-                        font.material.shader = TMPNoGlowFontShader;
+                    if (font.material.shader != MainUIFontMaterialShader) {
+                        font.material.shader = MainUIFontMaterialShader;
+                    }
+                    if (!font.material.shaderKeywords.Any()) {
+                        font.material.shaderKeywords = UINoGlowMaterial.shaderKeywords;
                     }
                 }
                 return _fallbackFonts;
@@ -68,7 +74,7 @@ namespace FontNao_ru.Models
         public static async Task CreateChatFont()
         {
             IsInitialized = false;
-            while (TMPNoGlowFontShader == null) {
+            while (MainUIFontMaterialShader == null) {
                 await Task.Delay(10);
             }
             if (MainFont != null) {
@@ -86,6 +92,25 @@ namespace FontNao_ru.Models
                 _ = Directory.CreateDirectory(FallBackFontPath);
             }
             AssetBundle bundle = null;
+            foreach (var filename in Directory.EnumerateFiles(MainFontPath, "*.assets", SearchOption.TopDirectoryOnly)) {
+                using (var fs = File.OpenRead(filename)) {
+                    bundle = AssetBundle.LoadFromStream(fs);
+                }
+                if (bundle != null) {
+                    break;
+                }
+            }
+            if (bundle != null) {
+                foreach (var bundleItem in bundle.GetAllAssetNames()) {
+                    var asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
+                    if (asset != null) {
+                        Plugin.Info($"Main {asset.name} is Load.");
+                        MainFont = asset;
+                        bundle.Unload(false);
+                        break;
+                    }
+                }
+            }
             _fallbackFonts.Clear();
             foreach (var fallbackFontPath in Directory.EnumerateFiles(FallBackFontPath, "*.assets")) {
                 using (var fs = File.OpenRead(fallbackFontPath)) {
@@ -97,12 +122,13 @@ namespace FontNao_ru.Models
                 foreach (var bundleItem in bundle.GetAllAssetNames()) {
                     var asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
                     if (asset != null) {
-                        Plugin.Info($"{asset.name} is Load");
+                        Plugin.Info($"Fallback {asset.name} is Load.");
                         _fallbackFonts.Add(asset);
                     }
                 }
                 bundle.Unload(false);
             }
+            MainFont.fallbackFontAssetTable = FallBackFonts.ToList();
             IsInitialized = true;
         }
     }

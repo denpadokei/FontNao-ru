@@ -1,5 +1,9 @@
-﻿using HarmonyLib;
+﻿using BeatSaberMarkupLanguage;
+using FontNao_ru.Models;
+using HarmonyLib;
+using System.Linq;
 using TMPro;
+using UnityEngine;
 
 namespace FontNao_ru.Patch
 {
