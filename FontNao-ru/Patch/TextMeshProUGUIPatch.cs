@@ -5,16 +5,16 @@ using TMPro;
 
 namespace FontNao_ru.Patch
 {
-    [HarmonyPatch(typeof(TMP_Text))]
-    [HarmonyPatch(nameof(TMP_Text.text), MethodType.Setter)]
+    [HarmonyPatch(typeof(TextMeshProUGUI))]
+    [HarmonyPatch(nameof(TextMeshProUGUI.Awake), MethodType.Normal)]
     internal class TextMeshProUGUIPatch
     {
-        [HarmonyPrefix]
-        public static void HarmonyPrefix(TMP_Text __instance)
+        [HarmonyPostfix]
+        public static void HarmonyPost(TextMeshProUGUI __instance, TMP_FontAsset ___m_fontAsset)
         {
             try {
-                if (__instance is TextMeshProUGUI text && (text.font.name == "Teko-Medium SDF" || text.font.name == "Teko-Medium SDF Numbers Monospaced Curved") && FontLoader.MainFont && text.font != FontLoader.MainFont) {
-                    text.font = FontLoader.MainFont;
+                if ((___m_fontAsset.name == "Teko-Medium SDF" || ___m_fontAsset.name == "Teko-Medium SDF Numbers Monospaced Curved") && FontLoader.MainFont && ___m_fontAsset != FontLoader.MainFont) {
+                    __instance.font = FontLoader.MainFont;
                 }
             }
             catch (Exception) {

@@ -1,4 +1,5 @@
-﻿using BS_Utils.Utilities;
+﻿using BeatSaberMarkupLanguage;
+using BS_Utils.Utilities;
 using FontNao_ru.Models;
 using HarmonyLib;
 using IPA;
@@ -66,6 +67,7 @@ namespace FontNao_ru
                 var tmp = FontLoader.FallBackFonts.ToList();
                 foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
                     if (fontAsset == FontLoader.MainFont) {
+                        FontLoader.MainFont.fallbackFontAssetTable.Add(BeatSaberUI.MainTextFont);
                         continue;
                     }
                     var newFallBack = new List<TMP_FontAsset>();
