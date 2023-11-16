@@ -1,135 +1,202 @@
 ﻿using BeatSaberMarkupLanguage;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.ResourceManagement.Util;
 
 namespace FontNao_ru.Models
 {
-    internal static class FontLoader
+    internal class FontLoader : ComponentSingleton<FontLoader>
     {
-        private static Material s_noGlow;
-        public static Material UINoGlowMaterial => s_noGlow ?? (s_noGlow = BeatSaberUI.MainUIFontMaterial);
+        private Material s_noGlow;
+        public Material UINoGlowMaterial
+        {
+            get
+            {
+                try {
+                    return this.s_noGlow ?? (this.s_noGlow = BeatSaberUI.MainUIFontMaterial);
+                }
+                catch (Exception) {
+                    return null;
+                }
+            }
+        }
 
-        private static Shader s_mainUIFontMaterialShader;
-        public static Shader MainUIFontMaterialShader => s_mainUIFontMaterialShader ?? (s_mainUIFontMaterialShader = !BeatSaberUI.MainTextFont ? null : BeatSaberUI.MainTextFont.material.shader);
+        private Shader s_mainUIFontMaterialShader;
+        public Shader MainUIFontMaterialShader
+        {
+            get
+            {
+                try {
+                    return this.s_mainUIFontMaterialShader ?? (this.s_mainUIFontMaterialShader = !BeatSaberUI.MainTextFont ? null : BeatSaberUI.MainTextFont.material.shader);
+                }
+                catch (Exception) {
+                    return null;
+                }
+            }
+        }
 
         // DaNike to the rescue 
-        public static bool TryGetTMPFontByFamily(string family, out TMP_FontAsset font)
+        public bool TryGetTMPFontByFamily(string family, out TMP_FontAsset font)
         {
             if (FontManager.TryGetTMPFontByFamily(family, out font)) {
-                font.material.shader = MainUIFontMaterialShader;
+                font.material.shader = this.MainUIFontMaterialShader;
                 return true;
             }
 
             return false;
         }
-        private static readonly string FontAssetPath = Path.Combine(Environment.CurrentDirectory, "UserData", "FontNao_ru", "FontAssets");
-        private static readonly string MainFontPath = Path.Combine(FontAssetPath, "Main");
-        private static readonly string FallBackFontPath = Path.Combine(FontAssetPath, "FallBack");
 
-        public static bool IsInitialized { get; private set; } = false;
+        public void Awake()
+        {
+            this.MainFontPath = Path.Combine(this.FontAssetPath, "Main");
+            this.FallBackFontPath = Path.Combine(this.FontAssetPath, "FallBack");
+        }
 
-        private static TMP_FontAsset _mainFont = null;
+        public void OnDestroy()
+        {
+            if (this.MainFont) {
+                Destroy(this.MainFont);
+            }
+            foreach (var font in this.FallBackFonts) {
+                if (font) {
+                    Destroy(font);
+                }
+            }
+            this.IsInitialized = false;
+        }
 
-        public static TMP_FontAsset MainFont
+        public IEnumerator Start()
+        {
+            while (!this.IsInitialized) {
+                yield return this.CreateFont();
+            }
+        }
+
+        private string FontAssetPath { get; } = Path.Combine(Environment.CurrentDirectory, "UserData", "FontNao_ru", "FontAssets");
+        private string MainFontPath { get; set; }
+        private string FallBackFontPath { get; set; }
+
+        public bool IsInitialized { get; private set; } = false;
+
+        private TMP_FontAsset _mainFont = null;
+
+        public TMP_FontAsset MainFont
         {
             get
             {
-                if (!_mainFont) {
+                try {
+                    if (!this._mainFont) {
+                        return null;
+                    }
+                    if (this._mainFont.material.shader != this.MainUIFontMaterialShader) {
+                        this._mainFont.material.shader = this.MainUIFontMaterialShader;
+                    }
+                    if (!this._mainFont.material.shaderKeywords.Any()) {
+                        this._mainFont.material.shaderKeywords = this.UINoGlowMaterial.shaderKeywords;
+                    }
+                    return this._mainFont;
+                }
+                catch (Exception) {
                     return null;
                 }
-                if (_mainFont.material.shader != MainUIFontMaterialShader) {
-                    _mainFont.material.shader = MainUIFontMaterialShader;
-                }
-                if (!_mainFont.material.shaderKeywords.Any()) {
-                    _mainFont.material.shaderKeywords = UINoGlowMaterial.shaderKeywords;
-                }
-                return _mainFont;
             }
-            private set => _mainFont = value;
+            private set => this._mainFont = value;
         }
 
-        private static List<TMP_FontAsset> _fallbackFonts = new List<TMP_FontAsset>();
-        public static List<TMP_FontAsset> FallBackFonts
+        private List<TMP_FontAsset> _fallbackFonts = new List<TMP_FontAsset>();
+        public List<TMP_FontAsset> FallBackFonts
         {
             get
             {
-                foreach (var font in _fallbackFonts) {
-                    if (font.material.shader != MainUIFontMaterialShader) {
-                        font.material.shader = MainUIFontMaterialShader;
+                try {
+
+                    foreach (var font in this._fallbackFonts) {
+                        if (font.material.shader != this.MainUIFontMaterialShader) {
+                            font.material.shader = this.MainUIFontMaterialShader;
+                        }
+                        if (!font.material.shaderKeywords.Any()) {
+                            font.material.shaderKeywords = this.UINoGlowMaterial.shaderKeywords;
+                        }
                     }
-                    if (!font.material.shaderKeywords.Any()) {
-                        font.material.shaderKeywords = UINoGlowMaterial.shaderKeywords;
-                    }
+                    return this._fallbackFonts;
                 }
-                return _fallbackFonts;
+                catch (Exception) {
+                    return this._fallbackFonts;
+                }
             }
-            private set => _fallbackFonts = value;
+            private set => this._fallbackFonts = value;
         }
 
-        public static async Task CreateChatFont()
+        public IEnumerator CreateFont()
         {
-            IsInitialized = false;
-            while (MainUIFontMaterialShader == null) {
-                await Task.Delay(10);
-            }
-            if (MainFont != null) {
-                GameObject.Destroy(MainFont);
-            }
-            foreach (var font in FallBackFonts) {
-                if (font != null) {
-                    GameObject.Destroy(font);
+            this.IsInitialized = false;
+            yield return new WaitWhile(() => !this.MainUIFontMaterialShader || !this.UINoGlowMaterial);
+            try {
+                if (this.MainFont != null) {
+                    GameObject.Destroy(this.MainFont);
                 }
-            }
-            if (!Directory.Exists(MainFontPath)) {
-                _ = Directory.CreateDirectory(MainFontPath);
-            }
-            if (!Directory.Exists(FallBackFontPath)) {
-                _ = Directory.CreateDirectory(FallBackFontPath);
-            }
-            AssetBundle bundle = null;
-            foreach (var filename in Directory.EnumerateFiles(MainFontPath, "*.assets", SearchOption.TopDirectoryOnly)) {
-                using (var fs = File.OpenRead(filename)) {
-                    bundle = AssetBundle.LoadFromStream(fs);
+                foreach (var font in this.FallBackFonts) {
+                    if (font != null) {
+                        GameObject.Destroy(font);
+                    }
                 }
-                if (bundle != null) {
-                    break;
+                if (!Directory.Exists(this.MainFontPath)) {
+                    _ = Directory.CreateDirectory(this.MainFontPath);
                 }
-            }
-            if (bundle != null) {
-                foreach (var bundleItem in bundle.GetAllAssetNames()) {
-                    var asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
-                    if (asset != null) {
-                        Plugin.Info($"Main {asset.name} is Load.");
-                        MainFont = asset;
-                        bundle.Unload(false);
+                if (!Directory.Exists(this.FallBackFontPath)) {
+                    _ = Directory.CreateDirectory(this.FallBackFontPath);
+                }
+                AssetBundle bundle = null;
+                foreach (var filename in Directory.EnumerateFiles(this.MainFontPath, "*.assets", SearchOption.TopDirectoryOnly)) {
+                    using (var fs = File.OpenRead(filename)) {
+                        bundle = AssetBundle.LoadFromStream(fs);
+                    }
+                    if (bundle != null) {
                         break;
                     }
                 }
-            }
-            _fallbackFonts.Clear();
-            foreach (var fallbackFontPath in Directory.EnumerateFiles(FallBackFontPath, "*.assets")) {
-                using (var fs = File.OpenRead(fallbackFontPath)) {
-                    bundle = AssetBundle.LoadFromStream(fs);
-                }
-                if (bundle == null) {
-                    continue;
-                }
-                foreach (var bundleItem in bundle.GetAllAssetNames()) {
-                    var asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
-                    if (asset != null) {
-                        Plugin.Info($"Fallback {asset.name} is Load.");
-                        _fallbackFonts.Add(asset);
+                if (bundle != null) {
+                    foreach (var bundleItem in bundle.GetAllAssetNames()) {
+                        var asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
+                        if (asset != null) {
+                            Plugin.Info($"Main {asset.name} is Load.");
+                            this.MainFont = asset;
+                            bundle.Unload(false);
+                            break;
+                        }
                     }
                 }
-                bundle.Unload(false);
+                this._fallbackFonts.Clear();
+                foreach (var fallbackFontPath in Directory.EnumerateFiles(this.FallBackFontPath, "*.assets")) {
+                    using (var fs = File.OpenRead(fallbackFontPath)) {
+                        bundle = AssetBundle.LoadFromStream(fs);
+                    }
+                    if (bundle == null) {
+                        continue;
+                    }
+                    foreach (var bundleItem in bundle.GetAllAssetNames()) {
+                        var asset = bundle.LoadAsset<TMP_FontAsset>(Path.GetFileNameWithoutExtension(bundleItem));
+                        if (asset != null) {
+                            Plugin.Info($"Fallback {asset.name} is Load.");
+                            this._fallbackFonts.Add(asset);
+                        }
+                    }
+                    bundle.Unload(false);
+                }
+                if (this.MainFont) {
+                    this.MainFont.fallbackFontAssetTable.AddRange(this.FallBackFonts);
+                }
             }
-            MainFont.fallbackFontAssetTable = FallBackFonts.ToList();
-            IsInitialized = true;
+            catch (Exception e) {
+                Plugin.Error(e);
+                yield break;
+            }
+            this.IsInitialized = true;
         }
     }
 }

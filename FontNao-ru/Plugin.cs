@@ -1,11 +1,14 @@
-﻿using BS_Utils.Utilities;
+﻿using BeatSaberMarkupLanguage;
+using BS_Utils.Utilities;
 using FontNao_ru.Models;
 using HarmonyLib;
 using IPA;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using IPALogger = IPA.Logging.Logger;
@@ -24,23 +27,23 @@ namespace FontNao_ru
         internal static IPALogger Log { get; private set; }
         private Harmony harmony;
 
-        public static void Error(Exception log)
+        public static void Error(Exception log, [CallerMemberName] string mem = null, [CallerLineNumber] int line = 0)
         {
             try {
-                Log.Error(log);
+                Log.Error($"[{mem}({line})]{log}");
             }
             catch (Exception e) {
                 Log.Error(e);
             }
         }
 
-        public static void Info(string message)
+        public static void Info(string message, [CallerMemberName] string mem = null, [CallerLineNumber] int line = 0)
         {
             try {
-                Log.Info(message);
+                Log.Info($"[{mem}({line})]{message}");
             }
-            catch (Exception) {
-                Log.Error($"{message}");
+            catch (Exception e) {
+                Log.Error($"[{mem}({line})]{e}");
             }
         }
 
@@ -56,35 +59,58 @@ namespace FontNao_ru
             Plugin.Log = logger;
             Plugin.Log?.Debug("Logger initialized.");
             BSEvents.lateMenuSceneLoadedFresh += this.BSEvents_lateMenuSceneLoadedFresh;
-            this.ApplyHarmonyPatches();
         }
 
         private void BSEvents_lateMenuSceneLoadedFresh(ScenesTransitionSetupDataSO obj)
         {
-            try {
+            _ = FontLoader.Instance.StartCoroutine(ChangeFonts());
+        }
 
-                var tmp = FontLoader.FallBackFonts.ToList();
-                foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
-                    if (fontAsset == FontLoader.MainFont) {
+        private static readonly HashSet<TMP_FontAsset> s_fonts = new HashSet<TMP_FontAsset>();
+
+        private static IEnumerator ChangeFonts()
+        {
+            yield return new WaitWhile(() => !FontLoader.Instance || !FontLoader.Instance.IsInitialized);
+            var tmp = FontLoader.Instance.FallBackFonts.ToList();
+            foreach (var fontAsset in Resources.FindObjectsOfTypeAll<TMP_FontAsset>()) {
+                Info(fontAsset.name);
+                try {
+                    if (fontAsset == FontLoader.Instance.MainFont) {
+                        if (FontLoader.Instance.MainFont.fallbackFontAssetTable == null) {
+                            FontLoader.Instance.MainFont.fallbackFontAssetTable = new List<TMP_FontAsset> { BeatSaberUI.MainTextFont };
+                        }
+                        else {
+                            FontLoader.Instance.MainFont.fallbackFontAssetTable.Add(BeatSaberUI.MainTextFont);
+                        }
+                        _ = s_fonts.Add(fontAsset);
+                        Info($"{fontAsset.name} is Main font.");
                         continue;
                     }
-                    var newFallBack = new List<TMP_FontAsset>();
-                    var oldFallback = fontAsset.fallbackFontAssetTable?.ToList();
-                    newFallBack.AddRange(tmp);
-                    if (oldFallback != null) {
-                        newFallBack.AddRange(oldFallback);
-                    }
-                    if (fontAsset.fallbackFontAssetTable == null) {
-                        fontAsset.fallbackFontAssetTable = newFallBack;
-                    }
-                    else {
-                        fontAsset.fallbackFontAssetTable.Clear();
-                        fontAsset.fallbackFontAssetTable.AddRange(newFallBack);
+                    if (FontLoader.Instance.FallBackFonts.Any()) {
+                        if (s_fonts.Contains(fontAsset)) {
+                            Info($"{fontAsset.name} aleady seted.");
+                            continue;
+                        }
+                        var newFallBack = new List<TMP_FontAsset>();
+                        var oldFallback = fontAsset.fallbackFontAssetTable?.ToList();
+                        newFallBack.AddRange(tmp);
+                        if (oldFallback != null) {
+                            newFallBack.AddRange(oldFallback);
+                        }
+                        Info($"{fontAsset.name} Set fallback.");
+                        if (fontAsset.fallbackFontAssetTable == null) {
+                            fontAsset.fallbackFontAssetTable = newFallBack;
+                        }
+                        else {
+                            fontAsset.fallbackFontAssetTable.Clear();
+                            fontAsset.fallbackFontAssetTable.AddRange(newFallBack);
+                        }
+                        _ = s_fonts.Add(fontAsset);
                     }
                 }
-            }
-            catch (Exception e) {
-                Log?.Error(e);
+                catch (Exception e) {
+                    Error(e);
+                }
             }
         }
 
@@ -108,7 +134,7 @@ namespace FontNao_ru
         [OnEnable]
         public void OnEnable()
         {
-
+            this.ApplyHarmonyPatches();
         }
 
         /// <summary>
@@ -119,7 +145,6 @@ namespace FontNao_ru
         [OnDisable]
         public void OnDisable()
         {
-
             this.RemoveHarmonyPatches();
         }
 
@@ -162,7 +187,7 @@ namespace FontNao_ru
         {
             try {
                 // Removes all patches with this HarmonyId
-                this.harmony.UnpatchSelf();
+                this.harmony?.UnpatchSelf();
             }
             catch (Exception ex) {
                 Plugin.Log?.Error("Error removing Harmony patches: " + ex.Message);

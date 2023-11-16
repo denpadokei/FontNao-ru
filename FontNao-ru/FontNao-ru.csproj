@@ -82,6 +82,11 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.ResourceManager.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
@@ -130,7 +135,6 @@
   <ItemGroup>
     <Compile Include="Models\FontLoader.cs" />
     <Compile Include="Patch\LebelBarPatch.cs" />
-    <Compile Include="Patch\LoadAndSetUpFontFallbacksAsyncPatch.cs" />
     <Compile Include="Patch\StringToCharArrayPatch.cs" />
     <Compile Include="Patch\TextMeshProUGUIPatch.cs" />
     <Compile Include="Plugin.cs" />
