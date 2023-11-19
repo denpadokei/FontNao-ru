@@ -58,7 +58,6 @@ namespace FontNao_ru
             Instance = this;
             Plugin.Log = logger;
             Plugin.Log?.Debug("Logger initialized.");
-            BSEvents.lateMenuSceneLoadedFresh += this.BSEvents_lateMenuSceneLoadedFresh;
         }
 
         private void BSEvents_lateMenuSceneLoadedFresh(ScenesTransitionSetupDataSO obj)
@@ -134,6 +133,7 @@ namespace FontNao_ru
         [OnEnable]
         public void OnEnable()
         {
+            BSEvents.lateMenuSceneLoadedFresh += this.BSEvents_lateMenuSceneLoadedFresh;
             this.ApplyHarmonyPatches();
         }
 
@@ -146,6 +146,7 @@ namespace FontNao_ru
         public void OnDisable()
         {
             this.RemoveHarmonyPatches();
+            BSEvents.lateMenuSceneLoadedFresh -= this.BSEvents_lateMenuSceneLoadedFresh;
         }
 
         /*
