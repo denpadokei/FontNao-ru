@@ -16,14 +16,14 @@ namespace FontNao_ru.Patch
         [HarmonyTargetMethod]
         public static MethodBase Method()
         {
-            return typeof(TableView).GetMethod(nameof(TableView.RefreshCells), BindingFlags.Public | BindingFlags.Instance);
+            return typeof(TableView).GetMethod(nameof(TableView.RefreshCells), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         [HarmonyPostfix]
-        public static void HarmonyPrefix(List<TableCell> ____visibleCells)
+        public static void HarmonyPrefix(TableView __instance)
         {
             try {
-                foreach (var cell in ____visibleCells) {
+                foreach (var cell in __instance._visibleCells) {
                     if (cell is LevelListTableCell levelCell) {
                         levelCell._songNameText.enableAutoSizing = true;
                         levelCell._songNameText.fontSizeMax = 4f;
