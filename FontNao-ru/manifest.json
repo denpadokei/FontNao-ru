@@ -3,12 +3,12 @@
   "id": "FontNao_ru",
   "name": "FontNao-ru",
   "author": "denpadokei",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
-  "gameVersion": "1.37.1",
+  "gameVersion": "1.42.0",
   "dependsOn": {
-    "BSIPA": "^4.2.2",
-    "BeatSaberMarkupLanguage": "^1.6.10",
-    "BS Utils": "^1.12.2"
+    "BSIPA": "^4.3.7",
+    "BeatSaberMarkupLanguage": "^1.14.1",
+    "BS Utils": "^1.14.3"
   }
 }
