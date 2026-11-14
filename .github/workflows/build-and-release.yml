@@ -115,7 +115,7 @@ jobs:
             $dll = @(Get-ChildItem -LiteralPath $root -Recurse -File -Filter 'FontNao-ru.dll' -ErrorAction SilentlyContinue |
               Where-Object { $_.FullName -notmatch '\\obj\\' } |
               Sort-Object LastWriteTime -Descending)[0]
-            if (-not $dll) { throw "Build output not found under $root: FontNao-ru.dll" }
+            if (-not $dll) { throw "Build output not found under ${root}: FontNao-ru.dll" }
 
             $layout = Join-Path $env:RUNNER_TEMP 'layout'
             New-Item -ItemType Directory -Force -Path (Join-Path $layout 'Plugins') | Out-Null
